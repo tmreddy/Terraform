@@ -1,0 +1,16 @@
+import "tfplan/v2" as tfplan
+
+instances = tfplan.resources.aws_instance
+
+main = rule {
+  tfplan.run.workspace != "prod" or all_instances_are_not_t2_micro()
+}
+
+all_instances_are_not_t2_micro = func() {
+  for instance in instances {
+    if instance.change.actions contains "create" {
+      instance.change.after.instance_type is not "t2.micro"
+    }
+  }
+  true
+}
